@@ -4,13 +4,19 @@
 var moment = require('moment');
 var leftPad = require('./padding');
 
+
+
+
 /**
-Utility class to format timestamps(?)
+Utility class to format lengths of time
+
+* extract the hours, minutes, seconds, 
+* format according to how the user/client requires
+
 **/
 var TimeFormat = {
   sec_to_hhmmss_improved: function(t) {
     if (t === null) return '';
-    var pad = leftPad;
     var m = moment.duration(t, 'seconds');
     var timeArr = [Math.floor(m.asHours()), Math.floor(m.minutes()), Math.floor(m.seconds())];
     var str = "<span class='duration'>";
@@ -18,10 +24,10 @@ var TimeFormat = {
     str += timeArr[0];
     str += ":";
     if (timeArr[0] === 0 && timeArr[1] > 0) str += "<strong>";
-    str += pad(timeArr[1], 2, '0');
+    str += leftPad(timeArr[1], 2, '0');
     if (timeArr[0] >= 0 || timeArr[1] > 0) str += "</strong>";
     str += ":";
-    str += pad(timeArr[2], 2, '0');
+    str += leftPad(timeArr[2], 2, '0');
     str += "</span>";
     return str;
   },
@@ -37,9 +43,8 @@ var TimeFormat = {
       return TimeFormat.seconds_to_hhmmss(t);
     }
   },
-  seconds_to_hhmmss: function(t, skip_seconds) {
-    var aTime = ~~t,
-      pad = leftPad;
+  seconds_to_hhmmss: function(t, dont_display_seconds) {
+    var aTime = ~~t;
 
     if (aTime < 0) {
       aTime += (new Date().getTime() / 1000);
@@ -49,25 +54,25 @@ var TimeFormat = {
       minutes = Math.floor((aTime % 3600) / 60),
       seconds = Math.floor(aTime % 60);
 
-    if (skip_seconds) {
+    if (dont_display_seconds) {
       if (!hours) {
         return minutes + ' min';
       }
-      return [hours, 'h ', pad(minutes, 2, '0'), ' min'].join('');
+      return [hours, 'h ', leftPad(minutes, 2, '0'), ' min'].join('');
     }
 
     if (!hours) {
       if (!minutes) {
         return seconds + ' sec';
       }
-      seconds = pad(seconds, 2, '0');
-      minutes = pad(minutes, 2, '0');
+      seconds = leftPad(seconds, 2, '0');
+      minutes = leftPad(minutes, 2, '0');
       return minutes + ':' + seconds + ' min';
     }
 
-    minutes = pad(minutes, 2, '0');
-    seconds = pad(seconds, 2, '0');
-    hours = pad(hours, 2, '0');
+    minutes = leftPad(minutes, 2, '0');
+    seconds = leftPad(seconds, 2, '0');
+    hours = leftPad(hours, 2, '0');
 
     return hours + ':' + minutes + ':' + seconds;
   },
@@ -116,5 +121,10 @@ var TimeFormat = {
     return hours + ':' + minutes + ':' + seconds;
   }
 };
+
+for(var method in TimeFormat){
+  if(TimeFormat.hasOwnProperty(method))
+  console.log(method)
+}
 
 module.exports = TimeFormat;
