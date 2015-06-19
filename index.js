@@ -1,23 +1,23 @@
-String.leftPad = function (val, size, ch) {
-    var result = ""+val;
-    ch = ch||" ";
-    while (result.length < size) {
-        result = ch + result;
-    }
-    return result;
-};
+'use strict';
 
-module.exports = TimeFormat = {
-  sec_to_hhmmss_improved: function(t){
-    if(t == null) return '';
-    var pad = String.leftPad;
+
+var moment = require('moment');
+var leftPad = require('./padding');
+
+/**
+Utility class to format timestamps(?)
+**/
+var TimeFormat = {
+  sec_to_hhmmss_improved: function(t) {
+    if (t === null) return '';
+    var pad = leftPad;
     var m = moment.duration(t, 'seconds');
     var timeArr = [Math.floor(m.asHours()), Math.floor(m.minutes()), Math.floor(m.seconds())];
     var str = "<span class='duration'>";
     if (timeArr[0] > 0) str += "<strong>";
     str += timeArr[0];
     str += ":";
-    if (timeArr[0] == 0 && timeArr[1] > 0) str += "<strong>";
+    if (timeArr[0] === 0 && timeArr[1] > 0) str += "<strong>";
     str += pad(timeArr[1], 2, '0');
     if (timeArr[0] >= 0 || timeArr[1] > 0) str += "</strong>";
     str += ":";
@@ -25,8 +25,8 @@ module.exports = TimeFormat = {
     str += "</span>";
     return str;
   },
-  sec_to_decimal_hours: function(t){
-    return (t/60/60).toFixed(2) + " h";
+  sec_to_decimal_hours: function(t) {
+    return (t / 60 / 60).toFixed(2) + " h";
   },
   seconds_to_ext_hhmmss: function(t, type) {
     if (type === 'improved') {
@@ -39,15 +39,15 @@ module.exports = TimeFormat = {
   },
   seconds_to_hhmmss: function(t, skip_seconds) {
     var aTime = ~~t,
-    pad = String.leftPad;
+      pad = leftPad;
 
     if (aTime < 0) {
       aTime += (new Date().getTime() / 1000);
     }
 
     var hours = Math.floor(aTime / 3600),
-    minutes = Math.floor((aTime % 3600) / 60),
-    seconds = Math.floor(aTime % 60);
+      minutes = Math.floor((aTime % 3600) / 60),
+      seconds = Math.floor(aTime % 60);
 
     if (skip_seconds) {
       if (!hours) {
@@ -73,15 +73,15 @@ module.exports = TimeFormat = {
   },
 
   seconds_to_hhmm: function(sum) {
-    return Math.floor(sum / 3600) + ':' + String.leftPad('' + Math.floor(sum % 3600 / 60), 2, '0') + ' h';
+    return Math.floor(sum / 3600) + ':' + leftPad('' + Math.floor(sum % 3600 / 60), 2, '0') + ' h';
   },
 
-  seconds_to_small_hhmm : function(sum) {
-    return Math.floor(sum / 3600) + ':' + String.leftPad('' + Math.floor(sum % 3600 / 60), 2, '0');
+  seconds_to_small_hhmm: function(sum) {
+    return Math.floor(sum / 3600) + ':' + leftPad('' + Math.floor(sum % 3600 / 60), 2, '0');
   },
 
   seconds_to_pretty_hhmm: function(sum) {
-    return Math.floor(sum / 3600) + ' h ' + String.leftPad('' + Math.floor(sum % 3600 / 60), 2, '0') + ' min';
+    return Math.floor(sum / 3600) + ' h ' + leftPad('' + Math.floor(sum % 3600 / 60), 2, '0') + ' min';
   },
 
   milliseconds_to_hhmmss: function(t) {
@@ -104,16 +104,17 @@ module.exports = TimeFormat = {
       if (!minutes) {
         return seconds + ' sec';
       }
-      seconds = String.leftPad(seconds, 2, '0');
-      minutes = String.leftPad(minutes, 2, '0');
+      seconds = leftPad(seconds, 2, '0');
+      minutes = leftPad(minutes, 2, '0');
       return minutes + ':' + seconds + ' min';
     }
 
-    minutes = String.leftPad(minutes, 2, '0');
-    seconds = String.leftPad(seconds, 2, '0');
-    hours = String.leftPad(hours, 2, '0');
+    minutes = leftPad(minutes, 2, '0');
+    seconds = leftPad(seconds, 2, '0');
+    hours = leftPad(hours, 2, '0');
 
     return hours + ':' + minutes + ':' + seconds;
   }
-
 };
+
+module.exports = TimeFormat;
