@@ -1,20 +1,31 @@
 'use strict';
 
-
 var moment = require('moment');
 var leftPad = require('./padding');
 
-
-
-
 /**
-Utility class to format lengths of time
+ * Utility class to format lengths of time
+ * - extract the hours, minutes, seconds, 
+ * - format according to how the user/client requires
+ * - accepted formats 
+ *    - Clock:  hh:mm:ss 
+ *    - Pretty:  00 h 00 min 00 sec
+ *    - HTML: <span></span> 
+ **/
 
-* extract the hours, minutes, seconds, 
-* format according to how the user/client requires
+var secondsInAMinute = 60;
+var secondsInAnHour = secondsInAMinute * 60;
 
-**/
+var padToTwoDigits = function(value){
+  return leftPad(value, 2, '0');
+}
+
 var TimeFormat = {
+  
+  pretty_format: function(hours, minutes, seconds){
+    return hours + ' h ' + minutes + ' min ' + seconds + ' sec'; 
+  },
+
   sec_to_hhmmss_improved: function(t) {
     if (t === null) return '';
     var m = moment.duration(t, 'seconds');
@@ -24,23 +35,23 @@ var TimeFormat = {
     str += timeArr[0];
     str += ":";
     if (timeArr[0] === 0 && timeArr[1] > 0) str += "<strong>";
-    str += leftPad(timeArr[1], 2, '0');
+    str += padToTwoDigits(timeArr[1]);
     if (timeArr[0] >= 0 || timeArr[1] > 0) str += "</strong>";
     str += ":";
-    str += leftPad(timeArr[2], 2, '0');
+    str += padToTwoDigits(timeArr[2]);
     str += "</span>";
     return str;
   },
   sec_to_decimal_hours: function(t) {
-    return (t / 60 / 60).toFixed(2) + " h";
+    return (t / secondsInAMinute / secondsInAMinute).toFixed(2) + " h";
   },
   seconds_to_ext_hhmmss: function(t, type) {
     if (type === 'improved') {
-      return TimeFormat.sec_to_hhmmss_improved(t);
+      return this.sec_to_hhmmss_improved(t);
     } else if (type === 'decimal') {
-      return TimeFormat.sec_to_decimal_hours(t);
+      return this.sec_to_decimal_hours(t);
     } else {
-      return TimeFormat.seconds_to_hhmmss(t);
+      return this.seconds_to_hhmmss(t);
     }
   },
   seconds_to_hhmmss: function(t, dont_display_seconds) {
@@ -50,47 +61,47 @@ var TimeFormat = {
       aTime += (new Date().getTime() / 1000);
     }
 
-    var hours = Math.floor(aTime / 3600),
-      minutes = Math.floor((aTime % 3600) / 60),
-      seconds = Math.floor(aTime % 60);
+    var hours = Math.floor(aTime / secondsInAnHour),
+      minutes = Math.floor((aTime % secondsInAnHour) / secondsInAMinute),
+      seconds = Math.floor(aTime % secondsInAMinute);
 
     if (dont_display_seconds) {
       if (!hours) {
         return minutes + ' min';
       }
-      return [hours, 'h ', leftPad(minutes, 2, '0'), ' min'].join('');
+      return [hours, 'h ', padToTwoDigits(minutes), ' min'].join('');
     }
 
     if (!hours) {
       if (!minutes) {
         return seconds + ' sec';
       }
-      seconds = leftPad(seconds, 2, '0');
-      minutes = leftPad(minutes, 2, '0');
+      seconds = padToTwoDigits(seconds);
+      minutes = padToTwoDigits(minutes);
       return minutes + ':' + seconds + ' min';
     }
 
-    minutes = leftPad(minutes, 2, '0');
-    seconds = leftPad(seconds, 2, '0');
-    hours = leftPad(hours, 2, '0');
+    minutes = padToTwoDigits(minutes);
+    seconds = padToTwoDigits(seconds);
+    hours = padToTwoDigits(hours);
 
     return hours + ':' + minutes + ':' + seconds;
   },
 
   seconds_to_hhmm: function(sum) {
-    return Math.floor(sum / 3600) + ':' + leftPad('' + Math.floor(sum % 3600 / 60), 2, '0') + ' h';
+    return Math.floor(sum / secondsInAnHour) + ':' + padToTwoDigits('' + Math.floor(sum % secondsInAnHour /secondsInAMinute)) + ' h';
   },
 
   seconds_to_small_hhmm: function(sum) {
-    return Math.floor(sum / 3600) + ':' + leftPad('' + Math.floor(sum % 3600 / 60), 2, '0');
+    return Math.floor(sum / secondsInAnHour) + ':' + padToTwoDigits('' + Math.floor(sum % secondsInAnHour /secondsInAMinute));
   },
 
   seconds_to_pretty_hhmm: function(sum) {
-    return Math.floor(sum / 3600) + ' h ' + leftPad('' + Math.floor(sum % 3600 / 60), 2, '0') + ' min';
+    return Math.floor(sum / secondsInAnHour) + ' h ' + padToTwoDigits('' + Math.floor(sum % secondsInAnHour /secondsInAMinute)) + ' min';
   },
 
-  milliseconds_to_hhmmss: function(t) {
-    var aTime = t;
+  milliseconds_to_hhmmss: function(t, dont_display_seconds) {
+    var aTime = Math.floor(t);
 
     aTime = parseInt(aTime, 10);
     if (isNaN(aTime)) {
@@ -98,33 +109,36 @@ var TimeFormat = {
     }
 
     if (aTime < 0) {
-      aTime += (new Date().getTime());
+      aTime += (new Date().getTime() / 1000);
     }
 
-    var hours = Math.floor(aTime / 3600000);
-    var minutes = Math.floor((aTime % 3600000) / 60000);
-    var seconds = Math.floor((aTime % 60000) / 1000);
+    var hours = Math.floor(aTime / secondsInAnHour),
+      minutes = Math.floor((aTime % secondsInAnHour) / secondsInAMinute),
+      seconds = Math.floor(aTime % secondsInAMinute);
+
+    if (dont_display_seconds) {
+      if (!hours) {
+        return minutes + ' min';
+      }
+      return [hours, 'h ', padToTwoDigits(minutes), ' min'].join('');
+    }
 
     if (!hours) {
       if (!minutes) {
         return seconds + ' sec';
       }
-      seconds = leftPad(seconds, 2, '0');
-      minutes = leftPad(minutes, 2, '0');
+      seconds = padToTwoDigits(seconds);
+      minutes = padToTwoDigits(minutes);
       return minutes + ':' + seconds + ' min';
     }
 
-    minutes = leftPad(minutes, 2, '0');
-    seconds = leftPad(seconds, 2, '0');
-    hours = leftPad(hours, 2, '0');
+    minutes = padToTwoDigits(minutes);
+    seconds = padToTwoDigits(seconds);
+    hours = padToTwoDigits(hours);
 
     return hours + ':' + minutes + ':' + seconds;
   }
 };
 
-for(var method in TimeFormat){
-  if(TimeFormat.hasOwnProperty(method))
-  console.log(method)
-}
 
 module.exports = TimeFormat;
